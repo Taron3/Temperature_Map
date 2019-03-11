@@ -28,7 +28,7 @@ public:
 //public slots:
     void setMode(Mode mode);
     void boundingBox(); // adding QGraphicsRectItem for bounding box
-    void randomRect();  // randomly adding rects in scene
+    void addRandomRect();  // randomly adding rects in scene
 
 protected:
     void drawBackground (QPainter* painter, const QRectF &rect);

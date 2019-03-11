@@ -36,30 +36,34 @@ void Scene::boundingBox()
     addItem(rect1);
 }
 
-void Scene::randomRect()
+void Scene::addRandomRect()
 {
-
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < 1000; i++)
     {
-        QRectF rect1( Random::get(-50, 200), Random::get(-50, 200) ,Random::get(0, 300), Random::get(0, 300) );
-        rect = new QGraphicsRectItem(rect1 );
+        QList<QGraphicsItem*> itemList = items();
+
+        QRectF randomRect( Random::get(-50, 200), Random::get(-50, 200) ,Random::get(5, 300), Random::get(5, 300) );
+        rect = new QGraphicsRectItem(randomRect );
         rect->setPen(QPen(Qt::red, 1));
-        addItem(rect);
-    }
-    /*
-    QList<QGraphicsItem*> itemList = items();
-    //qDebug()<< Q_FUNC_INFO <<  itemList.size() ;
-    foreach(QGraphicsItem *item, itemList )
-    {
-        //qDebug()<< Q_FUNC_INFO << "foreach" ;
-        QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*> (item);
 
-        if(rectItem->rect().intersects(rect1) );
+        bool isIntersected = false;
+        foreach(QGraphicsItem *item, itemList)
+        {
+            QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*> (item);
+            if(randomRect.intersects(rectItem->rect()) )
+            {
+                isIntersected = true;
+            }
+        }
+        if(!isIntersected)
         {
             addItem(rect);
         }
-
-    }*/
+    }
+////
+    QList<QGraphicsItem*> itemList = items();
+    qDebug() <<  itemList.size();
+////
 }
 
 void Scene::drawBackground(QPainter *painter, const QRectF &rect)

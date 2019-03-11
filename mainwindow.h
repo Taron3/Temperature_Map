@@ -25,7 +25,7 @@ public:
 private slots:
     void groupBoxClicked();
     void boundingBoxButtonTriggered();
-    void randomRectButtonTriggered();
+    void addRandomRectButtonTriggered();
 
 private:    
     Ui::MainWindow *ui;
@@ -47,7 +47,7 @@ private:
 
     QToolBar *editToolBar;
     QToolButton *boundingBoxButton;
-    QToolButton *randomRectButton;
+    QToolButton *addRandomRectButton;
 
 };
 

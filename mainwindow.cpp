@@ -88,9 +88,9 @@ void MainWindow::boundingBoxButtonTriggered()
     scene->boundingBox();
 }
 
-void MainWindow::randomRectButtonTriggered()
+void MainWindow::addRandomRectButtonTriggered()
 {
-    scene->randomRect();
+    scene->addRandomRect();
 }
 
 void MainWindow::createGroupBox()
@@ -157,12 +157,12 @@ void MainWindow::createToolBar()
     boundingBoxButton = new QToolButton;
     boundingBoxButton->setIcon(QIcon(":/images/bbox.png"));
     connect(boundingBoxButton, SIGNAL(clicked()), this, SLOT(boundingBoxButtonTriggered() ));
-    randomRectButton = new QToolButton;
-    randomRectButton->setIcon(QIcon(":/images/rrect.png"));
-    connect(randomRectButton, SIGNAL(clicked()), this, SLOT(randomRectButtonTriggered() ));
+    addRandomRectButton = new QToolButton;
+    addRandomRectButton->setIcon(QIcon(":/images/rrect.png"));
+    connect(addRandomRectButton, SIGNAL(clicked()), this, SLOT(addRandomRectButtonTriggered() ));
 
     editToolBar = addToolBar("Edit Tool Buttons");
     editToolBar->addWidget(boundingBoxButton);
-    editToolBar->addWidget(randomRectButton);
+    editToolBar->addWidget(addRandomRectButton);
 }
 

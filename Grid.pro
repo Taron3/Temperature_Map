@@ -14,11 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    scene.cpp \
+    scene.cpp
 
 HEADERS  += mainwindow.h \
     scene.h \
-    random.h
+    random.h \
+    data.h
 
 FORMS    += mainwindow.ui
 

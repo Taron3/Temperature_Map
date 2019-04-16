@@ -7,6 +7,8 @@
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QToolButton>
+#include <QSpinBox>
+
 #include "scene.h"
 
 
@@ -27,11 +29,19 @@ private slots:
     void boundingBoxButtonTriggered();
     void addRandomRectButtonTriggered();
 
+    void openActionTriggered();
+    void gridActionTriggered();
+    void netlistActionTriggered();
+    void setGridSizeTriggered(int gridSpinBoxValue);
+    void setLayerTriggered(int layerSpinBoxValue);
+
 private:    
     Ui::MainWindow *ui;
 
     void createGroupBox();
     QRadioButton *createRadioButton(const QString &text);
+    void createActions();
+    void createMenus();
     void createToolBar();
 
     QGraphicsView *view;
@@ -45,9 +55,21 @@ private:
     QGroupBox *groupBox;
     QButtonGroup *buttonGroup;
 
+    QMenu *fileMenu;
+    QMenu *editMenu;
+    QMenu *generateMenu;
+    QMenu *aboutMenu;
+
     QToolBar *editToolBar;
     QToolButton *boundingBoxButton;
     QToolButton *addRandomRectButton;
+
+    QAction *openAction;
+    QAction *gridAction;
+    QAction *netlisAction;
+
+    QSpinBox *gridSpinBox;
+    QSpinBox *layerSpinBox;
 
 };
 

@@ -23,15 +23,21 @@ public:
 
     explicit Scene(QObject *parent = 0);
 
-    int getGridSize() const { return this->gridSize; }
+    void setGridSize(int myGridSize);
+    int getGridSize() const { return this->m_gridSize; }
+    void setLayer(int layer);
 
 //public slots:
     void setMode(Mode mode);
     void boundingBox(); // adding QGraphicsRectItem for bounding box
     void addRandomRect();  // randomly adding rects in scene
+    void addRectFromFile(); // add rects in scene from file
+    QString writeNetlist();
+
+    void drawGrid(const QRectF &rect);
 
 protected:
-    void drawBackground (QPainter* painter, const QRectF &rect);
+    // void drawBackground (QPainter* painter, const QRectF &rect);
 
     void mousePressEvent  (QGraphicsSceneMouseEvent *mouseEvent);
     void mouseMoveEvent   (QGraphicsSceneMouseEvent *mouseEvent);
@@ -39,10 +45,14 @@ protected:
 
 
 private:
-    int gridSize;
+    int m_gridSize;
+    int m_layer;
 
     Mode myMode;
     void changeReceivedPoint(QPointF &point);
+    QList<QRectF> getCells();
+    qreal power(QRectF intersectedRect, QRectF rect, int i);
+    QList<qreal> getPowers();
 
     QGraphicsLineItem* line;
     QGraphicsRectItem* rect;

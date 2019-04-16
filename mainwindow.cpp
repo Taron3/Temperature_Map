@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QRadioButton>
+#include <QFileDialog>
 
 #include <QDebug>
 
@@ -13,16 +14,18 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    createActions();
+    createMenus();
     createToolBar();
-    createGroupBox();
-
+    //createGroupBox();
 
 
     scene = new Scene(this);
-    scene->setSceneRect(QRectF(10,10,260,200) );
+    scene->setSceneRect(QRectF(180,90,260,200) );
+    scene->setBackgroundBrush(Qt::black);  // Qt::cyan
 
     QHBoxLayout *layout = new QHBoxLayout;
-    layout -> addWidget(groupBox );
+    //layout -> addWidget(groupBox );
     view = new QGraphicsView(scene);
     layout -> addWidget(view);
 
@@ -93,6 +96,40 @@ void MainWindow::addRandomRectButtonTriggered()
     scene->addRandomRect();
 }
 
+void MainWindow::openActionTriggered()
+{
+    // read file and add rects in scene
+    scene->addRectFromFile();
+}
+
+void MainWindow::gridActionTriggered()
+{
+    scene->drawGrid(scene->itemsBoundingRect() ); //  < -------------------------------------
+}
+
+void MainWindow::netlistActionTriggered()
+{
+    QString netlist = scene->writeNetlist();
+    QFile file("/home/taron/Desktop/netlist");
+    if (file.open(QFile::WriteOnly | QFile::Truncate))
+    {
+        QTextStream stream(&file);
+        stream << netlist;
+    }
+
+    file.close();
+}
+
+void MainWindow::setGridSizeTriggered(int gridSpinBoxValue)
+{
+    scene->setGridSize(gridSpinBoxValue);
+}
+
+void MainWindow::setLayerTriggered(int layerSpinBoxValue)
+{
+    scene->setLayer(layerSpinBoxValue);
+}
+
 void MainWindow::createGroupBox()
 {
     groupBox = new QGroupBox("GroupBox");
@@ -103,11 +140,13 @@ void MainWindow::createGroupBox()
     Polygon   = createRadioButton("&Polygon");
     Default->setChecked(true);
 
+
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(Default);
     vbox->addWidget(Line);
     vbox->addWidget(Rectangle);
     vbox->addWidget(Polygon);
+
 
     vbox->addStretch(1);
     groupBox->setLayout(vbox);
@@ -151,18 +190,75 @@ QRadioButton *MainWindow::createRadioButton(const QString &text)
     connect(button, SIGNAL(clicked()), this, SLOT(groupBoxClicked() ));
     return button;
 }
+/////////////////////////////////////////////////
+
+
+void MainWindow::createActions()
+{
+    openAction = new QAction("&Open");
+    openAction->setIcon(QIcon(":/images/open.png"));
+    connect(openAction, SIGNAL(triggered()), this, SLOT(openActionTriggered()) );
+
+    gridAction = new QAction("&Grid");
+    gridAction->setIcon(QIcon(":/images/grid.png"));
+    // gridAction->setCheckable(true);
+    connect(gridAction, SIGNAL(triggered()), this, SLOT(gridActionTriggered()) );
+
+    netlisAction = new QAction("&Netlist");
+    netlisAction->setIcon(QIcon(":/images/netlist.png"));
+    connect(netlisAction, SIGNAL(triggered()), this, SLOT(netlistActionTriggered()) );
+}
+
+void MainWindow::createMenus()
+{
+    fileMenu = menuBar()->addMenu("&File");
+    fileMenu->addAction(openAction);
+
+    editMenu = menuBar()->addMenu("&Edit");
+    editMenu->addAction(gridAction);
+
+    generateMenu = menuBar()->addMenu("&Generate");
+    generateMenu->addAction(netlisAction);
+
+    aboutMenu = menuBar()->addMenu("&About");
+}
 
 void MainWindow::createToolBar()
 {
     boundingBoxButton = new QToolButton;
     boundingBoxButton->setIcon(QIcon(":/images/bbox.png"));
     connect(boundingBoxButton, SIGNAL(clicked()), this, SLOT(boundingBoxButtonTriggered() ));
+
     addRandomRectButton = new QToolButton;
     addRandomRectButton->setIcon(QIcon(":/images/rrect.png"));
     connect(addRandomRectButton, SIGNAL(clicked()), this, SLOT(addRandomRectButtonTriggered() ));
 
+
+
+    gridSpinBox = new QSpinBox();
+    gridSpinBox->setPrefix("Grid size: ");
+    gridSpinBox->setRange(5, 100);
+    gridSpinBox->setSingleStep(5);
+    gridSpinBox->setValue(30);
+    connect(gridSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setGridSizeTriggered(int)) );
+
+    layerSpinBox = new QSpinBox();
+    layerSpinBox->setPrefix("Layer: ");
+    layerSpinBox->setRange(0, 30);
+    connect(layerSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLayerTriggered(int)) );
+
     editToolBar = addToolBar("Edit Tool Buttons");
-    editToolBar->addWidget(boundingBoxButton);
-    editToolBar->addWidget(addRandomRectButton);
+///////////////////////////////////////////////////////////////////
+    // editToolBar->addWidget(boundingBoxButton);              ///////
+    // editToolBar->addWidget(addRandomRectButton);            ///////
+///////////////////////////////////////////////////////////////////
+
+    editToolBar->addWidget(layerSpinBox);
+    editToolBar->addAction(openAction);
+    editToolBar->addAction(netlisAction);
+
+    editToolBar->addWidget(gridSpinBox);
+    editToolBar->addAction(gridAction);
+
 }
 

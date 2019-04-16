@@ -71,6 +71,7 @@ private:
     Random& operator = (const Random&) = delete;
 };
 
-
-
 #endif // RANDOM_H
+
+
+

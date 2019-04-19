@@ -10,6 +10,7 @@
 #include <QSpinBox>
 
 #include "scene.h"
+#include "surfacegraph.h"
 
 
 namespace Ui {
@@ -21,7 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -32,6 +33,7 @@ private slots:
     void openActionTriggered();
     void gridActionTriggered();
     void netlistActionTriggered();
+    void thermalMapActionTriggered();
     void setGridSizeTriggered(int gridSpinBoxValue);
     void setLayerTriggered(int layerSpinBoxValue);
 
@@ -67,9 +69,12 @@ private:
     QAction *openAction;
     QAction *gridAction;
     QAction *netlisAction;
+    QAction *thermalMapAction;
 
     QSpinBox *gridSpinBox;
     QSpinBox *layerSpinBox;
+
+    // SurfaceGraph *sfg;
 
 };
 

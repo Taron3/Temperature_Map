@@ -21,11 +21,12 @@ class Scene : public QGraphicsScene
 public:
     enum Mode {Default, Line, Rectangle, Polygon };
 
-    explicit Scene(QObject *parent = 0);
+    explicit Scene(QObject *parent = nullptr);
 
     void setGridSize(int myGridSize);
     int getGridSize() const { return this->m_gridSize; }
     void setLayer(int layer);
+    int getLayer() const { return this->m_layer; }
 
 //public slots:
     void setMode(Mode mode);
@@ -53,6 +54,7 @@ private:
     QList<QRectF> getCells();
     qreal power(QRectF intersectedRect, QRectF rect, int i);
     QList<qreal> getPowers();
+    /*QList<qreal> getCellPowers();*/
 
     QGraphicsLineItem* line;
     QGraphicsRectItem* rect;

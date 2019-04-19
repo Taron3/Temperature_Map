@@ -1,10 +1,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "surfacegraph.h"
+#include "data.h"
+
 #include <QMouseEvent>
 #include <QCheckBox>
 #include <QHBoxLayout>
 #include <QRadioButton>
 #include <QFileDialog>
+#include <QVector>
 
 #include <QDebug>
 
@@ -17,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     createActions();
     createMenus();
     createToolBar();
-    //createGroupBox();
+    // createGroupBox();
 
 
     scene = new Scene(this);
@@ -32,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     ////////////////////////////////////////////////////////////////////////////////////////
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
+
+    // sfg = nullptr;
 
     setCentralWidget(widget);
 
@@ -118,6 +124,25 @@ void MainWindow::netlistActionTriggered()
     }
 
     file.close();
+}
+
+void MainWindow::thermalMapActionTriggered()
+{
+    QString ic = QFileDialog::getOpenFileName(this, "Open File", "/home", "*ic0");
+    if (ic.isEmpty())
+    {
+        return;
+    }
+qDebug() << "FFFFFF " << ic << "\n";
+    int row = (scene->itemsBoundingRect().height() / scene->getGridSize()) + 1;
+    int column = (scene->itemsBoundingRect().width() / scene->getGridSize()) + 1;
+    int layer = scene->getLayer();
+
+    QVector<qreal> cellPower = Parser::getCellPowers(ic, row, column, layer);
+qDebug() << "\nCELLS=  " << cellPower.size() << "\n" << cellPower << "\n";
+
+    SurfaceGraph *surfg = new SurfaceGraph();
+    surfg->show();
 }
 
 void MainWindow::setGridSizeTriggered(int gridSpinBoxValue)
@@ -207,6 +232,10 @@ void MainWindow::createActions()
     netlisAction = new QAction("&Netlist");
     netlisAction->setIcon(QIcon(":/images/netlist.png"));
     connect(netlisAction, SIGNAL(triggered()), this, SLOT(netlistActionTriggered()) );
+
+    thermalMapAction = new QAction("&Thermal Map");
+    thermalMapAction->setIcon(QIcon(":/images/surface"));
+    connect(thermalMapAction, SIGNAL(triggered()), this, SLOT(thermalMapActionTriggered()) );
 }
 
 void MainWindow::createMenus()
@@ -219,6 +248,7 @@ void MainWindow::createMenus()
 
     generateMenu = menuBar()->addMenu("&Generate");
     generateMenu->addAction(netlisAction);
+    generateMenu->addAction(thermalMapAction);
 
     aboutMenu = menuBar()->addMenu("&About");
 }
@@ -259,6 +289,8 @@ void MainWindow::createToolBar()
 
     editToolBar->addWidget(gridSpinBox);
     editToolBar->addAction(gridAction);
+
+    editToolBar->addAction(thermalMapAction);
 
 }
 

@@ -6,5 +6,6 @@
         <file>images/open.png</file>
         <file>images/grid.png</file>
         <file>images/netlist.png</file>
+        <file>images/surface</file>
     </qresource>
 </RCC>

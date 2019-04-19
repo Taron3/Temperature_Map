@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += datavisualization
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -13,13 +14,16 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+    data.cpp \
         mainwindow.cpp \
-    scene.cpp
+    scene.cpp \
+    surfacegraph.cpp
 
 HEADERS  += mainwindow.h \
     scene.h \
     random.h \
-    data.h
+    data.h \
+    surfacegraph.h
 
 FORMS    += mainwindow.ui
 

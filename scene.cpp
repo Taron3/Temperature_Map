@@ -14,14 +14,14 @@
 
 Scene::Scene(QObject *parent)
     : QGraphicsScene(parent)
-    , m_gridSize(5)
+    , m_gridSize(35)
     , m_layer(0)
 {
     Q_ASSERT(m_gridSize > 0);
 
-    line = 0;
-    rect = 0;
-    lineForPolygon = 0;
+    line = nullptr;
+    rect = nullptr;
+    lineForPolygon = nullptr;
 
     isFirstPress   = true;
 }
@@ -272,7 +272,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         //    changeReceivedPoint(point);
         //    addEllipse( point.x() /* - rad */, point.y() /* - rad */, /* rad  * */ 5.0, /* rad * */ 5.0,
         //    QPen(Qt::white), QBrush(Qt::NoBrush) );
-        //    break;
+            break;
 
         }
         case Line:
@@ -343,7 +343,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if (myMode == Line && line != 0)
+    if (myMode == Line && line != nullptr)
     {
         QPointF endPoint = mouseEvent->scenePos();
         changeReceivedPoint(endPoint);
@@ -351,7 +351,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QLineF newLine(line->line().p1(), endPoint);
         line->setLine(newLine);
     }
-    else if(myMode == Rectangle && rect != 0)
+    else if(myMode == Rectangle && rect != nullptr)
     {
         QPointF endPoint = mouseEvent->scenePos();
         changeReceivedPoint(endPoint);
@@ -365,7 +365,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QRectF newRect(rect->rect().topLeft(), endPoint);
         rect->setRect(newRect);
     }
-    else if(myMode == Polygon && lineForPolygon != 0)
+    else if(myMode == Polygon && lineForPolygon != nullptr)
     {
          qDebug() << Q_FUNC_INFO << "Move" ;
          QPointF endPoint = mouseEvent->scenePos();
@@ -379,7 +379,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if (myMode == Line && line != 0)
+    if (myMode == Line && line != nullptr)
     {
         QPointF endPoint = mouseEvent->scenePos();
         changeReceivedPoint(endPoint);
@@ -387,7 +387,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QLineF newLine(line->line().p1(), endPoint);
         line->setLine(newLine);
     }
-    else if(myMode == Rectangle && rect != 0)
+    else if(myMode == Rectangle && rect != nullptr)
     {
         QPointF endPoint = mouseEvent->scenePos();
         changeReceivedPoint(endPoint);
@@ -395,7 +395,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QRectF newRect(rect->rect().topLeft(), endPoint);
         rect->setRect(newRect);
     }
-    else if(myMode == Polygon && lineForPolygon != 0)
+    else if(myMode == Polygon && lineForPolygon != nullptr)
     {
         if( mouseEvent->button() == Qt::LeftButton)
         {

@@ -8,6 +8,7 @@
 #include <QHBoxLayout>
 #include <QRadioButton>
 #include <QFileDialog>
+#include <QDir>
 #include <QVector>
 
 #include <QDebug>
@@ -26,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     scene = new Scene(this);
     scene->setSceneRect(QRectF(180,90,260,200) );
-    scene->setBackgroundBrush(Qt::black);  // Qt::cyan
+    // scene->setBackgroundBrush(Qt::black);  // Qt::cyan
 
     QHBoxLayout *layout = new QHBoxLayout;
     //layout -> addWidget(groupBox );
@@ -37,9 +38,9 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
 
-    // sfg = nullptr;
-
     setCentralWidget(widget);
+
+        // scene->setBackgroundBrush(Qt::black);
 
     resize(700,500);
 }
@@ -104,31 +105,39 @@ void MainWindow::addRandomRectButtonTriggered()
 
 void MainWindow::openActionTriggered()
 {
-    // read file and add rects in scene
-    scene->addRectFromFile();
+    // read file and add elements in scene
+    QString layout = QFileDialog::getOpenFileName(this, "Open", QDir::homePath(), "*el");
+    if(layout.isEmpty())
+    {
+        return;
+    }
+    scene->addRectFromFile(layout);
 }
 
-void MainWindow::gridActionTriggered()
+void MainWindow::gridActionTriggered(bool isCecked)
 {
-    scene->drawGrid(scene->itemsBoundingRect() ); //  < -------------------------------------
+    scene->setDraw(isCecked);
 }
 
 void MainWindow::netlistActionTriggered()
 {
     QString netlist = scene->writeNetlist();
-    QFile file("/home/taron/Desktop/netlist");
+    QString fileNetlist = QFileDialog::getExistingDirectory(this, "Open Directory", QDir::homePath());
+    qDebug() << fileNetlist << "\n";
+
+    QFile file(fileNetlist + "/netlist.sp");
     if (file.open(QFile::WriteOnly | QFile::Truncate))
     {
         QTextStream stream(&file);
         stream << netlist;
     }
-
-    file.close();
 }
 
 void MainWindow::thermalMapActionTriggered()
 {
-    QString ic = QFileDialog::getOpenFileName(this, "Open File", "/home", "*ic0");
+    QString ic = QFileDialog::getOpenFileName(this, "Open", QDir::homePath(), "*ic0");
+     //QString ic = "/home/taron/Desktop/netlist(1).ic0";
+
     if (ic.isEmpty())
     {
         return;
@@ -137,11 +146,12 @@ qDebug() << "FFFFFF " << ic << "\n";
     int row = (scene->itemsBoundingRect().height() / scene->getGridSize()) + 1;
     int column = (scene->itemsBoundingRect().width() / scene->getGridSize()) + 1;
     int layer = scene->getLayer();
+    int gridSize = scene->getGridSize();
 
-    QVector<qreal> cellPower = Parser::getCellPowers(ic, row, column, layer);
-qDebug() << "\nCELLS=  " << cellPower.size() << "\n" << cellPower << "\n";
+    QVector<qreal> cellPowers = Parser::getCellPowers(ic, row, column, layer);
+qDebug() << "\nCELLS=  " << cellPowers.size() << "\n" << cellPowers << "\n";
 
-    SurfaceGraph *surfg = new SurfaceGraph();
+    SurfaceGraph *surfg = new SurfaceGraph(cellPowers, row, column, layer);
     surfg->show();
 }
 
@@ -226,8 +236,8 @@ void MainWindow::createActions()
 
     gridAction = new QAction("&Grid");
     gridAction->setIcon(QIcon(":/images/grid.png"));
-    // gridAction->setCheckable(true);
-    connect(gridAction, SIGNAL(triggered()), this, SLOT(gridActionTriggered()) );
+    gridAction->setCheckable(true);
+    connect(gridAction, SIGNAL(toggled(bool) ), this, SLOT(gridActionTriggered(bool)) );
 
     netlisAction = new QAction("&Netlist");
     netlisAction->setIcon(QIcon(":/images/netlist.png"));
@@ -269,18 +279,18 @@ void MainWindow::createToolBar()
     gridSpinBox->setPrefix("Grid size: ");
     gridSpinBox->setRange(5, 100);
     gridSpinBox->setSingleStep(5);
-    gridSpinBox->setValue(30);
+    gridSpinBox->setValue(35);
     connect(gridSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setGridSizeTriggered(int)) );
 
     layerSpinBox = new QSpinBox();
     layerSpinBox->setPrefix("Layer: ");
-    layerSpinBox->setRange(0, 30);
+    layerSpinBox->setRange(0, 10);
     connect(layerSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLayerTriggered(int)) );
 
     editToolBar = addToolBar("Edit Tool Buttons");
 ///////////////////////////////////////////////////////////////////
-    // editToolBar->addWidget(boundingBoxButton);              ///////
-    // editToolBar->addWidget(addRandomRectButton);            ///////
+    // editToolBar->addWidget(boundingBoxButton);           ///////
+    // editToolBar->addWidget(addRandomRectButton);         ///////
 ///////////////////////////////////////////////////////////////////
 
     editToolBar->addWidget(layerSpinBox);

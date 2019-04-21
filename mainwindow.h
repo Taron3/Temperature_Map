@@ -31,7 +31,7 @@ private slots:
     void addRandomRectButtonTriggered();
 
     void openActionTriggered();
-    void gridActionTriggered();
+    void gridActionTriggered(bool isCecked);
     void netlistActionTriggered();
     void thermalMapActionTriggered();
     void setGridSizeTriggered(int gridSpinBoxValue);

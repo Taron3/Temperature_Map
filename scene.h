@@ -11,8 +11,9 @@
 #include <QMouseEvent>
 #include <QPointF>
 #include <QPolygonF>
-
 #include <QVector>
+
+#include <QDebug>
 
 class Scene : public QGraphicsScene
 {
@@ -27,18 +28,18 @@ public:
     int getGridSize() const { return this->m_gridSize; }
     void setLayer(int layer);
     int getLayer() const { return this->m_layer; }
+    void setDraw(bool isDraw);
 
 //public slots:
     void setMode(Mode mode);
     void boundingBox(); // adding QGraphicsRectItem for bounding box
     void addRandomRect();  // randomly adding rects in scene
-    void addRectFromFile(); // add rects in scene from file
+    void addRectFromFile(QString &fileName); // add rects in scene from file
     QString writeNetlist();
-
-    void drawGrid(const QRectF &rect);
+    // void drawGrid(const QRectF &rect);
 
 protected:
-    // void drawBackground (QPainter* painter, const QRectF &rect);
+    void drawBackground (QPainter* painter, const QRectF &rect);
 
     void mousePressEvent  (QGraphicsSceneMouseEvent *mouseEvent);
     void mouseMoveEvent   (QGraphicsSceneMouseEvent *mouseEvent);
@@ -48,13 +49,14 @@ protected:
 private:
     int m_gridSize;
     int m_layer;
+    bool m_isDraw;
 
     Mode myMode;
     void changeReceivedPoint(QPointF &point);
     QList<QRectF> getCells();
     qreal power(QRectF intersectedRect, QRectF rect, int i);
     QList<qreal> getPowers();
-    /*QList<qreal> getCellPowers();*/
+    // qreal round(qreal val, int step);
 
     QGraphicsLineItem* line;
     QGraphicsRectItem* rect;

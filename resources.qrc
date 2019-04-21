@@ -2,10 +2,9 @@
     <qresource prefix="/">
         <file>images/bbox.png</file>
         <file>images/rrect.png</file>
-        <file>files/rects</file>
         <file>images/open.png</file>
         <file>images/grid.png</file>
         <file>images/netlist.png</file>
-        <file>images/surface</file>
+        <file>images/surface.png</file>
     </qresource>
 </RCC>

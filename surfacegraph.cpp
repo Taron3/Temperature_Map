@@ -20,14 +20,13 @@
 
 using namespace QtDataVisualization;
 
-const int sampleCountX = 50;
-const int sampleCountZ = 50;
-const float sampleMin = -8.0f;
-const float sampleMax = 8.0f;
-
-SurfaceGraph::SurfaceGraph(QWidget *parent)
+SurfaceGraph::SurfaceGraph(QVector<qreal> &cellPowers, int row, int column, int layer, QWidget *parent)
     : QWidget(parent)
 {
+    m_cellPowers = cellPowers;
+    m_row = row;
+    m_column = column;
+    m_layer = layer;
 
     m_graph = new Q3DSurface();
     QWidget *container = QWidget::createWindowContainer(m_graph);
@@ -42,8 +41,7 @@ SurfaceGraph::SurfaceGraph(QWidget *parent)
     }
 
     QSize screenSize = m_graph->screen()->size();
-    container->setMinimumSize(QSize(screenSize.width() / 2, screenSize.height() / 1.6));
-        // container->setMinimumSize(QSize(400, 400));
+    container->setMinimumSize(QSize(screenSize.width() / 2, screenSize.height() / 2));
     container->setMaximumSize(screenSize);
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     container->setFocusPolicy(Qt::StrongFocus);
@@ -51,12 +49,12 @@ SurfaceGraph::SurfaceGraph(QWidget *parent)
     m_graph->setAxisX(new QValue3DAxis);
     m_graph->setAxisY(new QValue3DAxis);
     m_graph->setAxisZ(new QValue3DAxis);
-         m_graph->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetIsometricRight);
+         m_graph->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetIsometricRightHigh);
 
     m_sqrtSinProxy = new QSurfaceDataProxy();
     m_sqrtSinSeries = new QSurface3DSeries(m_sqrtSinProxy);
 
-    QHBoxLayout *hLayout = new QHBoxLayout(this/*widget*/); // this
+    QHBoxLayout *hLayout = new QHBoxLayout(this);
     QVBoxLayout *vLayout = new QVBoxLayout();
     hLayout->addWidget(container, 1);
     hLayout->addLayout(vLayout);
@@ -89,7 +87,6 @@ SurfaceGraph::SurfaceGraph(QWidget *parent)
     selectionVBox->addWidget(modeItemRB);
     selectionVBox->addWidget(modeSliceRowRB);
     selectionVBox->addWidget(modeSliceColumnRB);
-        // selectionVBox->setAlignment(Qt::AlignTop);  // don't be
     selectionGroupBox->setLayout(selectionVBox);
 
 
@@ -157,52 +154,49 @@ SurfaceGraph::~SurfaceGraph()
 
 void SurfaceGraph::fillSqrtSinProxy()
 {
-    float stepX = (sampleMax - sampleMin) / float(sampleCountX - 1) ;
-    float stepZ = (sampleMax - sampleMin) / float(sampleCountZ - 1) ;
-
     QSurfaceDataArray *dataArray = new QSurfaceDataArray;
-    dataArray->reserve(sampleCountZ);  // row
-    for (int i = 0 ; i < sampleCountZ ; i++)
+    dataArray->reserve(m_row);
+    double maxPower = 0;
+    for (int i = 0 ; i < m_row ; i++) // Y
     {
-        QSurfaceDataRow *newRow = new QSurfaceDataRow(sampleCountX);
-        // Keep values within range bounds, since just adding step can cause minor drift due
-        // to the rounding errors.
-        float z = qMin(sampleMax, (i * stepZ + sampleMin));
-        int index = 0;
-        for (int j = 0; j < sampleCountX; j++) // column (width)
+        QSurfaceDataRow *newRow = new QSurfaceDataRow;
+        for (int j = 0; j < m_column; j++) // X
         {
-            float x = qMin(sampleMax, (j * stepX + sampleMin));
-            float R = qSqrt(z * z + x * x) + 0.01f;
-            float y = (qSin(R) / R + 0.24f) * 1.61f;
-            (*newRow)[index++].setPosition(QVector3D(x, y, z));
+            double power = m_cellPowers[i * m_column + j] ;
+            if(power > maxPower)
+            {
+                maxPower = power;
+                qDebug() << "POWER " << power << "\n";
+            }
+            (*newRow) << QVector3D(j, power, i);
         }
         *dataArray << newRow;
     }
-
     m_sqrtSinProxy->resetArray(dataArray);
 
-    sqrtSinModel();
-
+    sqrtSinModel(maxPower);
 }
 
-void SurfaceGraph::sqrtSinModel()
+void SurfaceGraph::sqrtSinModel(double max)
 {
-        m_sqrtSinSeries->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);
-        m_sqrtSinSeries->setFlatShadingEnabled(true);
-            // m_sqrtSinSeries->setFlatShadingEnabled(m_sqrtSinSeries->isFlatShadingEnabled());
+        m_sqrtSinSeries->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);  // WireFrame
+        //m_sqrtSinSeries->setDrawMode(QSurface3DSeries::DrawSurface);
+
+        // m_sqrtSinSeries->setFlatShadingEnabled(true);
+              m_sqrtSinSeries->setFlatShadingEnabled(m_sqrtSinSeries->isFlatShadingEnabled());
 
         m_graph->axisX()->setLabelFormat("%.2f");
         m_graph->axisZ()->setLabelFormat("%.2f");
-        m_graph->axisX()->setRange(sampleMin, sampleMax);
-        m_graph->axisY()->setRange(0.0f, 2.0f);
-        m_graph->axisZ()->setRange(sampleMin, sampleMax);
+        m_graph->axisX()->setRange(0, m_column - 1);
+        m_graph->axisY()->setRange(0, max / 1.5);
+        m_graph->axisZ()->setRange(0, m_row - 1);
         m_graph->axisX()->setLabelAutoRotation(30);
         m_graph->axisY()->setLabelAutoRotation(90);
         m_graph->axisZ()->setLabelAutoRotation(30);
 
         m_graph->addSeries(m_sqrtSinSeries);
 
-             // m_graph->activeTheme()->setType(Q3DTheme::Theme(7));
+              // m_graph->activeTheme()->setType(Q3DTheme::Theme(7));
 }
 
 void SurfaceGraph::setBlackToYellowGradient()
@@ -212,8 +206,6 @@ void SurfaceGraph::setBlackToYellowGradient()
     gr.setColorAt(0.33, Qt::blue);
     gr.setColorAt(0.67, Qt::red);
     gr.setColorAt(1.0, Qt::yellow);
-        // m_sqrtSinSeries->setBaseGradient(gr);
-        // m_sqrtSinSeries->setColorStyle(Q3DTheme::ColorStyleRangeGradient);
     m_graph->seriesList().at(0)->setBaseGradient(gr);
     m_graph->seriesList().at(0)->setColorStyle(Q3DTheme::ColorStyleRangeGradient);
 }
@@ -225,8 +217,6 @@ void SurfaceGraph::setGreenToRedGradient()
     gr.setColorAt(0.5, Qt::yellow);
     gr.setColorAt(0.8, Qt::red);
     gr.setColorAt(1.0, Qt::darkRed);
-        // m_sqrtSinSeries->setBaseGradient(gr);
-        // m_sqrtSinSeries->setColorStyle(Q3DTheme::ColorStyleRangeGradient);
     m_graph->seriesList().at(0)->setBaseGradient(gr);
     m_graph->seriesList().at(0)->setColorStyle(Q3DTheme::ColorStyleRangeGradient);
 }

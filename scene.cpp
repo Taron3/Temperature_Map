@@ -7,6 +7,7 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsPolygonItem>
 #include <QtMath>
+#include <QMessageBox>
 
 #include "random.h"
 #include "data.h"
@@ -16,6 +17,7 @@ Scene::Scene(QObject *parent)
     : QGraphicsScene(parent)
     , m_gridSize(35)
     , m_layer(0)
+    , m_isDraw(false)
 {
     Q_ASSERT(m_gridSize > 0);
 
@@ -34,6 +36,12 @@ void Scene::setGridSize(int myGridSize)
 void Scene::setLayer(int layer)
 {
     m_layer = layer;
+}
+
+void Scene::setDraw(bool isDraw)
+{
+    m_isDraw = isDraw;
+    this->update();
 }
 
 void Scene::setMode(Scene::Mode mode)
@@ -83,12 +91,17 @@ void Scene::addRandomRect()
     qDebug() << "******************************************************\n";
 }
 
-void Scene::addRectFromFile()
+void Scene::addRectFromFile(QString &fileName)
 {
 ///////////////////////////////////////////////////////////////////
-    QFile file(":/files/rects");                           ////////
-      if (!file.open(QIODevice::ReadOnly ))                ////////
-          return;                                          ////////
+    QFile file(fileName);                                  ////////
+        if (!file.open(QFile::ReadOnly | QFile::Text))     ////////
+        {                                                  ////////
+            QMessageBox msgBox;                            ////////
+            msgBox.setText("The document cannot opened."); ////////
+            msgBox.exec();                                 ////////
+            return;                                        ////////
+        }                                                  ////////
                                                            ////////
     QTextStream inStream(&file);                           ////////
     while (!inStream.atEnd())                              ////////
@@ -98,7 +111,6 @@ void Scene::addRectFromFile()
         line = line.simplified();                          ////////
         QStringList parameterList = line.split(';');       ////////
 ///////////////////////////////////////////////////////////////////
-        QList<QGraphicsItem*> itemList = items();  // delete
         // if(m_layer != parser::getLayer() )
             // continue;
 
@@ -107,21 +119,8 @@ void Scene::addRectFromFile()
             QRectF dataRect( Parser::getPoint(parameterList),
                              QSize(Parser::getWidth(parameterList), Parser::getHeight(parameterList)) );
             rect = new QGraphicsRectItem(dataRect );
-            rect->setPen(QPen(Qt::red, 2));
-
-            bool isIntersected = false;                                                       // delete
-            foreach(QGraphicsItem *item, itemList)                                            // delete
-            {                                                                                 // delete
-                QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*> (item);  // delete
-                if(dataRect.intersects(rectItem->rect()) )                                    // delete
-                {                                                                             // delete
-                    // isIntersected = true;                                                  // delete
-                }                                                                             // delete
-            }                                                                                 // delete
-            if(!isIntersected)                                                                // delete
-            {                                                                                 // delete
-              addItem(rect);
-            }                                                                                 // delete
+            rect->setPen(QPen(Qt::cyan, 1.5));
+            addItem(rect);
         }
     }
 }
@@ -192,7 +191,7 @@ QString Scene::writeNetlist()
 
                 // rr_s_i_j_layer_i+1_j_layer   _c_i_j_layer_s   _c_i+1_j_layer_s   R=rij
                 netlist += "rr_s_" + istr + "_" + jstr + "_" + kstr
-                        + "_" + QVariant(i + 1).toString() + "_" + jstr + "_" + kstr
+//                        + "_" + QVariant(i + 1).toString() + "_" + jstr + "_" + kstr
                         + " _c_" + istr + "_" + jstr + "_" + kstr + "_s"
                         + " _c_" + QVariant(i + 1).toString() + "_" + jstr + "_" + kstr + "_s"
                         + " R=rij\n";
@@ -235,7 +234,7 @@ QString Scene::writeNetlist()
     */
     return netlist;
 }
-
+/*
 void Scene::drawGrid(const QRectF &rect)
 {
     //qreal left = int(rect.left()) - (int(rect.left()) % m_gridSize);
@@ -248,11 +247,47 @@ void Scene::drawGrid(const QRectF &rect)
     qDebug() << "\nwww " << rect.width() << "hhh " << rect.height() << "\n" ;
     for (qreal x = left; x <= rect.width() ; x += m_gridSize)  // | | |
     {
-        addLine(x, top, x, top + rect.height(), QPen(Qt::white));
+        addLine(x, top, x, top + rect.height(), QPen(Qt::black));
     }
     for (qreal y = top; y <= rect.height(); y += m_gridSize)  // -- -- --
     {
-        addLine(left, y , left + rect.width() , y, QPen(Qt::white)) ;
+        addLine(left, y , left + rect.width() , y, QPen(Qt::black)) ;
+    }
+}
+*/
+void Scene::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    // setBackgroundBrush(Qt::black);  // don't work with QFileDialog::getOpenFileName( ... )
+    painter->fillRect(rect, QColor(63, 60, 57 )); // double darkGray
+
+    if(m_isDraw)
+    {
+        int step = m_gridSize;
+        painter->setPen(QPen(QColor(Qt::white)));
+
+        // horizontal
+        qreal start = int(rect.top()) - (int(rect.top()) % step);// round(rect.top(), step);
+        if (start > rect.top())
+        {
+            start -= step;
+        }
+        for (qreal y = start - step; y < rect.bottom(); )
+        {
+          y += step;
+          painter->drawLine(rect.left(), y, rect.right(), y);
+        }
+
+        // vertical
+        start = int(rect.left()) - (int(rect.left()) % step);//round(rect.left(), step);
+        if (start > rect.left())
+        {
+            start -= step;
+        }
+        for (qreal x = start - step; x < rect.right(); )
+        {
+          x += step;
+          painter->drawLine(x, rect.top(), x, rect.bottom());
+        }
     }
 }
 
@@ -518,3 +553,4 @@ QList<qreal> Scene::getPowers()
     }
     return cellPowerList;
 }
+

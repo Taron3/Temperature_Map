@@ -92,6 +92,13 @@ QVector<qreal> Parser::getCellPowers(QString &fileName, int row, int column, int
             {
                 cellValue.remove(' ');
                 cellValue.remove('m');
+                qreal value = cellValue.toDouble() / 1000;
+                cellValue = QVariant(value).toString();
+            }
+            if(cellValue.endsWith('u'))
+            {
+                cellValue.remove(' ');
+                cellValue.remove('u');
                 qreal value = cellValue.toDouble() / 1000000;
                 cellValue = QVariant(value).toString();
             }

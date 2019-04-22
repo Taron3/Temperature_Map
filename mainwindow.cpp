@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     createActions();
     createMenus();
     createToolBar();
-    // createGroupBox();
+            //createGroupBox();
 
 
     scene = new Scene(this);
@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     // scene->setBackgroundBrush(Qt::black);  // Qt::cyan
 
     QHBoxLayout *layout = new QHBoxLayout;
-    //layout -> addWidget(groupBox );
+            //layout -> addWidget(groupBox );
     view = new QGraphicsView(scene);
     layout -> addWidget(view);
 
@@ -111,7 +111,9 @@ void MainWindow::openActionTriggered()
     {
         return;
     }
-    scene->addRectFromFile(layout);
+
+    scene->setDataFileName(layout);
+    scene->addElementsFromFile();
 }
 
 void MainWindow::gridActionTriggered(bool isCecked)
@@ -123,13 +125,13 @@ void MainWindow::netlistActionTriggered()
 {
     QString netlist = scene->writeNetlist();
     QString fileNetlist = QFileDialog::getExistingDirectory(this, "Open Directory", QDir::homePath());
-    qDebug() << fileNetlist << "\n";
+//qDebug() << fileNetlist << "\n";
 
     QFile file(fileNetlist + "/netlist.sp");
     if (file.open(QFile::WriteOnly | QFile::Truncate))
     {
-        QTextStream stream(&file);
-        stream << netlist;
+        QTextStream outStream(&file);
+        outStream << netlist;
     }
 }
 
@@ -142,15 +144,14 @@ void MainWindow::thermalMapActionTriggered()
     {
         return;
     }
-qDebug() << "FFFFFF " << ic << "\n";
+//qDebug() << "FFFFFF " << ic << "\n";
     int row = (scene->itemsBoundingRect().height() / scene->getGridSize()) + 1;
     int column = (scene->itemsBoundingRect().width() / scene->getGridSize()) + 1;
     int layer = scene->getLayer();
     int gridSize = scene->getGridSize();
 
     QVector<qreal> cellPowers = Parser::getCellPowers(ic, row, column, layer);
-qDebug() << "\nCELLS=  " << cellPowers.size() << "\n" << cellPowers << "\n";
-
+//qDebug() << "\nCELLS=  " << cellPowers.size() << "\n" << cellPowers << "\n";
     SurfaceGraph *surfg = new SurfaceGraph(cellPowers, row, column, layer);
     surfg->show();
 }
@@ -261,6 +262,7 @@ void MainWindow::createMenus()
     generateMenu->addAction(thermalMapAction);
 
     aboutMenu = menuBar()->addMenu("&About");
+    menuBar()->show();
 }
 
 void MainWindow::createToolBar()
@@ -272,8 +274,6 @@ void MainWindow::createToolBar()
     addRandomRectButton = new QToolButton;
     addRandomRectButton->setIcon(QIcon(":/images/rrect.png"));
     connect(addRandomRectButton, SIGNAL(clicked()), this, SLOT(addRandomRectButtonTriggered() ));
-
-
 
     gridSpinBox = new QSpinBox();
     gridSpinBox->setPrefix("Grid size: ");

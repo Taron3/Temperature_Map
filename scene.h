@@ -12,6 +12,7 @@
 #include <QPointF>
 #include <QPolygonF>
 #include <QVector>
+#include <QString>
 
 #include <QDebug>
 
@@ -24,6 +25,7 @@ public:
 
     explicit Scene(QObject *parent = nullptr);
 
+    void setDataFileName(QString fileName);
     void setGridSize(int myGridSize);
     int getGridSize() const { return this->m_gridSize; }
     void setLayer(int layer);
@@ -34,7 +36,7 @@ public:
     void setMode(Mode mode);
     void boundingBox(); // adding QGraphicsRectItem for bounding box
     void addRandomRect();  // randomly adding rects in scene
-    void addRectFromFile(QString &fileName); // add rects in scene from file
+    void addElementsFromFile(); // add rects in scene from file
     QString writeNetlist();
     // void drawGrid(const QRectF &rect);
 
@@ -47,6 +49,9 @@ protected:
 
 
 private:
+    QString m_dataFileName;
+    // QFile m_dataFile;
+    // QTextStream m_inStream;
     int m_gridSize;
     int m_layer;
     bool m_isDraw;
@@ -56,7 +61,6 @@ private:
     QList<QRectF> getCells();
     qreal power(QRectF intersectedRect, QRectF rect, int i);
     QList<qreal> getPowers();
-    // qreal round(qreal val, int step);
 
     QGraphicsLineItem* line;
     QGraphicsRectItem* rect;

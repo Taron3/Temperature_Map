@@ -41,7 +41,7 @@ SurfaceGraph::SurfaceGraph(QVector<qreal> &cellPowers, int row, int column, int 
     }
 
     QSize screenSize = m_graph->screen()->size();
-    container->setMinimumSize(QSize(screenSize.width() / 2, screenSize.height() / 2));
+    container->setMinimumSize(QSize(screenSize.width() / 2, screenSize.height() / 1.5));
     container->setMaximumSize(screenSize);
     container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     container->setFocusPolicy(Qt::StrongFocus);
@@ -51,8 +51,8 @@ SurfaceGraph::SurfaceGraph(QVector<qreal> &cellPowers, int row, int column, int 
     m_graph->setAxisZ(new QValue3DAxis);
          m_graph->scene()->activeCamera()->setCameraPreset(Q3DCamera::CameraPresetIsometricRightHigh);
 
-    m_sqrtSinProxy = new QSurfaceDataProxy();
-    m_sqrtSinSeries = new QSurface3DSeries(m_sqrtSinProxy);
+    m_thermalProxy = new QSurfaceDataProxy();
+    m_thermalSeries = new QSurface3DSeries(m_thermalProxy);
 
     QHBoxLayout *hLayout = new QHBoxLayout(this);
     QVBoxLayout *vLayout = new QVBoxLayout();
@@ -144,7 +144,7 @@ SurfaceGraph::SurfaceGraph(QVector<qreal> &cellPowers, int row, int column, int 
 
     modeItemRB->setChecked(true);
 
-    fillSqrtSinProxy();
+    fillThermalProxy();
 }
 
 SurfaceGraph::~SurfaceGraph()
@@ -152,7 +152,7 @@ SurfaceGraph::~SurfaceGraph()
     delete m_graph;
 }
 
-void SurfaceGraph::fillSqrtSinProxy()
+void SurfaceGraph::fillThermalProxy()
 {
     QSurfaceDataArray *dataArray = new QSurfaceDataArray;
     dataArray->reserve(m_row);
@@ -166,35 +166,35 @@ void SurfaceGraph::fillSqrtSinProxy()
             if(power > maxPower)
             {
                 maxPower = power;
-                qDebug() << "POWER " << power << "\n";
+                //qDebug() << "POWER " << power << "\n";
             }
             (*newRow) << QVector3D(j, power, i);
         }
         *dataArray << newRow;
     }
-    m_sqrtSinProxy->resetArray(dataArray);
+    m_thermalProxy->resetArray(dataArray);
 
-    sqrtSinModel(maxPower);
+    thermalModel(maxPower);
 }
 
-void SurfaceGraph::sqrtSinModel(double max)
+void SurfaceGraph::thermalModel(double max)
 {
-        m_sqrtSinSeries->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);  // WireFrame
-        //m_sqrtSinSeries->setDrawMode(QSurface3DSeries::DrawSurface);
+        m_thermalSeries->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);  // WireFrame
+        //m_thermalSeries->setDrawMode(QSurface3DSeries::DrawSurface);
 
-        // m_sqrtSinSeries->setFlatShadingEnabled(true);
-              m_sqrtSinSeries->setFlatShadingEnabled(m_sqrtSinSeries->isFlatShadingEnabled());
+        // m_thermalSeries->setFlatShadingEnabled(true);
+              m_thermalSeries->setFlatShadingEnabled(m_thermalSeries->isFlatShadingEnabled());
 
         m_graph->axisX()->setLabelFormat("%.2f");
         m_graph->axisZ()->setLabelFormat("%.2f");
         m_graph->axisX()->setRange(0, m_column - 1);
-        m_graph->axisY()->setRange(0, max / 1.5);
+        m_graph->axisY()->setRange(0, max );
         m_graph->axisZ()->setRange(0, m_row - 1);
         m_graph->axisX()->setLabelAutoRotation(30);
         m_graph->axisY()->setLabelAutoRotation(90);
         m_graph->axisZ()->setLabelAutoRotation(30);
 
-        m_graph->addSeries(m_sqrtSinSeries);
+        m_graph->addSeries(m_thermalSeries);
 
               // m_graph->activeTheme()->setType(Q3DTheme::Theme(7));
 }

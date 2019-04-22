@@ -17,7 +17,7 @@ public:
     explicit SurfaceGraph(QVector<qreal> &cellPowers, int row, int column, int layer, QWidget *parent = nullptr);
     ~SurfaceGraph();
 
-    void sqrtSinModel(double max);
+    void thermalModel(double max);
 
     //! [0]
     void toggleModeNone() { m_graph->setSelectionMode(QAbstract3DGraph::SelectionNone); }
@@ -35,14 +35,14 @@ public Q_SLOTS:
 
 private:
     Q3DSurface *m_graph;
-    QSurfaceDataProxy *m_sqrtSinProxy;
-    QSurface3DSeries *m_sqrtSinSeries;
-        // QSurface3DSeries::DrawFlag m_draw_mode = QSurface3DSeries::DrawSurfaceAndWireframe;
+    QSurfaceDataProxy *m_thermalProxy;
+    QSurface3DSeries *m_thermalSeries;
     QVector<qreal> m_cellPowers;
     int m_row;
     int m_column;
     int m_layer;
-    void fillSqrtSinProxy();
+
+    void fillThermalProxy();
 };
 
 #endif // SURFACEGRAPH_H

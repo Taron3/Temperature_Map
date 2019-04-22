@@ -73,9 +73,6 @@ private:
 
     QSpinBox *gridSpinBox;
     QSpinBox *layerSpinBox;
-
-    // SurfaceGraph *sfg;
-
 };
 
 #endif // MAINWINDOW_H

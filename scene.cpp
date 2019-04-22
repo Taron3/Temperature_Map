@@ -19,13 +19,28 @@ Scene::Scene(QObject *parent)
     , m_layer(0)
     , m_isDraw(false)
 {
-    Q_ASSERT(m_gridSize > 0);
-
     line = nullptr;
     rect = nullptr;
     lineForPolygon = nullptr;
 
     isFirstPress   = true;
+}
+
+void Scene::setDataFileName(QString fileName)
+{
+    m_dataFileName = fileName;
+    /*
+    m_dataFile.setFileName(fileName);
+    if (!m_dataFile.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox msgBox;
+        msgBox.setText("The file cannot opened.");
+        msgBox.exec();
+        return;
+    }
+
+     m_inStream.setDevice(&m_dataFile);
+     */
 }
 
 void Scene::setGridSize(int myGridSize)
@@ -91,26 +106,24 @@ void Scene::addRandomRect()
     qDebug() << "******************************************************\n";
 }
 
-void Scene::addRectFromFile(QString &fileName)
+void Scene::addElementsFromFile()
 {
-///////////////////////////////////////////////////////////////////
-    QFile file(fileName);                                  ////////
-        if (!file.open(QFile::ReadOnly | QFile::Text))     ////////
-        {                                                  ////////
-            QMessageBox msgBox;                            ////////
-            msgBox.setText("The document cannot opened."); ////////
-            msgBox.exec();                                 ////////
-            return;                                        ////////
-        }                                                  ////////
-                                                           ////////
-    QTextStream inStream(&file);                           ////////
-    while (!inStream.atEnd())                              ////////
-    {                                                      ////////
-        QString line = file.readLine();                    ////////
-                                                           ////////
-        line = line.simplified();                          ////////
-        QStringList parameterList = line.split(';');       ////////
-///////////////////////////////////////////////////////////////////
+    QFile dataFile(m_dataFileName);
+    if (!dataFile.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox msgBox;
+        msgBox.setText("The file cannot opened.");
+        msgBox.exec();
+        return;
+    }
+
+    QTextStream inStream(&dataFile);
+    while (!inStream.atEnd())
+    {
+        QString line = dataFile.readLine();
+        line = line.simplified();
+
+        QStringList parameterList = line.split(';');
         // if(m_layer != parser::getLayer() )
             // continue;
 
@@ -145,15 +158,19 @@ QString Scene::writeNetlist()
     netlist += "****************  LAYER " + QVariant(m_layer).toString() + " ***************\n\n";
 
     QList<qreal> powerList = getPowers();
-    //QList<QRectF> cellList = getCells();
 
     int row = (itemsBoundingRect().height() / m_gridSize) + 1;
     int column = (itemsBoundingRect().width() / m_gridSize) + 1;
-    //qDebug() << "ROW = "  << row << " COLUMN= " << column << "\n";
+
+
+qDebug() << "POWER LISTS IZE= " << powerList.size() << "\n";
+qDebug() << "ROW  = " << row << "\n";
+qDebug() << "COLUN= " << column << "\n";
     for(int i = 0; i < row ; ++i)
     {
         for(int j = 0; j < column; ++j)
         {
+
             QString istr = QVariant(i).toString();
             QString jstr = QVariant(j).toString();
             QString kstr = QVariant(m_layer).toString();
@@ -163,7 +180,7 @@ QString Scene::writeNetlist()
             // .param i_i_j_layer =
             netlist += ".param i_" + istr + "_" + jstr + "_" + kstr
                     +  " = " + QVariant(powerList[column * i + j]).toString() + "\n";
-
+// qDebug() << i << "  " << j << "  " << m_layer << "\n";
             // ii_j_layer vdd _c_i_j_layer dc = i_0_1_0 ac = 0
             netlist += "i"         + istr + "_" + jstr + "_" + kstr
                     +  " vdd _c_"  + istr + "_" + jstr + "_" + kstr
@@ -191,7 +208,7 @@ QString Scene::writeNetlist()
 
                 // rr_s_i_j_layer_i+1_j_layer   _c_i_j_layer_s   _c_i+1_j_layer_s   R=rij
                 netlist += "rr_s_" + istr + "_" + jstr + "_" + kstr
-//                        + "_" + QVariant(i + 1).toString() + "_" + jstr + "_" + kstr
+                        + "_" + QVariant(i + 1).toString() + "_" + jstr + "_" + kstr
                         + " _c_" + istr + "_" + jstr + "_" + kstr + "_s"
                         + " _c_" + QVariant(i + 1).toString() + "_" + jstr + "_" + kstr + "_s"
                         + " R=rij\n";
@@ -221,25 +238,13 @@ QString Scene::writeNetlist()
     netlist += ".tran 10p 5n\n\n";
     netlist += ".end";
 
-     // qDebug() << "DEBUG_START CellSIZE= " << powerList;
-
-//*******************************************************************************************************************
-//*******************************************************************************************************************
-   /* QList<QGraphicsItem*> itemList = items(Qt::AscendingOrder);
-    foreach(QGraphicsItem *item, itemList)
-    {
-        QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*> (item);
-        qDebug() << "RECT = " << rectItem->rect() << "\n";
-    }
-    */
+      //qDebug() << "DEBUG_START CellSIZE= " << powerList.size() << "\n";
+      //qDebug() << "******************\n" << netlist;
     return netlist;
 }
 /*
 void Scene::drawGrid(const QRectF &rect)
 {
-    //qreal left = int(rect.left()) - (int(rect.left()) % m_gridSize);
-    //qreal top  = int(rect.top())  - (int(rect.top())  % m_gridSize);
-
     qreal left = rect.left();
     qreal top  = rect.top();
     qDebug() << "drawGrid RECT  " << rect << "\n";
@@ -258,7 +263,7 @@ void Scene::drawGrid(const QRectF &rect)
 void Scene::drawBackground(QPainter *painter, const QRectF &rect)
 {
     // setBackgroundBrush(Qt::black);  // don't work with QFileDialog::getOpenFileName( ... )
-    painter->fillRect(rect, QColor(63, 60, 57 )); // double darkGray
+    painter->fillRect(rect, QColor(63, 60, 57 )); // more darkGray
 
     if(m_isDraw)
     {
@@ -312,12 +317,21 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         }
         case Line:
         {
-            QPointF startPoint = mouseEvent->scenePos();
+////////////////////////////////////////////////////////////////
+        QList<QGraphicsItem*> itemList = items(Qt::AscendingOrder);
+        foreach(QGraphicsItem *item, itemList)
+        {
+            QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*> (item);
+            qDebug() << "RECT = " << rectItem->rect() << "\n";
+        }
+/////////////////////////////////////////////////////////////////
+
+            /*QPointF startPoint = mouseEvent->scenePos();
             changeReceivedPoint(startPoint);
 
             line = new QGraphicsLineItem(QLineF(startPoint, startPoint)) ;
             line->setPen(QPen(Qt::white, 1));
-            addItem(line);
+            addItem(line);*/
             break;
         }
         case Rectangle:
@@ -490,25 +504,29 @@ QList<QRectF> Scene::getCells()
             cellList.append(QRectF(x, y, m_gridSize, m_gridSize) );
         }
     }
-    qDebug() << "GRIDSIZE " << m_gridSize << "\n";
+    // qDebug() << "CellList= " << cellList.size() << "\n";
     return cellList;
 }
 
 qreal Scene::power(QRectF intersectedRect, QRectF rect, int i)
 {
-    QFile file(":/files/rects");
-      if (!file.open(QIODevice::ReadOnly ))
-          return - 1;
+    QFile dataFile(m_dataFileName);
+    if (!dataFile.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox msgBox;
+        msgBox.setText("The file cannot opened \n(for powers).");
+        msgBox.exec();
+    }
 
+    QTextStream inStream(&dataFile);
 
     qreal rectPower = 0;
     int rectNumber = 0;
-    QTextStream inStream(&file);
-
+//qDebug() << "IN_power()" << inStream.readLine() << "\n";
     while (!inStream.atEnd())
     {
         //qDebug() << "WHILE_IN_power()" << "\n";
-        QString line = file.readLine();
+        QString line = dataFile.readLine();
 
         line = line.simplified();
         QStringList parameterList = line.split(';');
@@ -532,6 +550,7 @@ QList<qreal> Scene::getPowers()
 {
     // get Cells
     QList<QRectF> cellList = getCells();
+qDebug() << "CELL LIST SIZE= " << cellList.size() << "\n";
 
     // powers for each cell
     QList<qreal> cellPowerList;
@@ -551,6 +570,8 @@ QList<qreal> Scene::getPowers()
         }
         cellPowerList.append(cellPower);
     }
+   // qDebug() << "CelPowerList= " << cellPowerList.size() << "\n";
+
     return cellPowerList;
 }
 

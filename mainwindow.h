@@ -8,6 +8,7 @@
 #include <QRadioButton>
 #include <QToolButton>
 #include <QSpinBox>
+#include <QShortcut>
 
 #include "scene.h"
 #include "surfacegraph.h"
@@ -37,6 +38,8 @@ private slots:
     void setGridSizeTriggered(int gridSpinBoxValue);
     void setLayerTriggered(int layerSpinBoxValue);
 
+    void aboutActoinTriggered();
+
 private:    
     Ui::MainWindow *ui;
 
@@ -60,19 +63,23 @@ private:
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *generateMenu;
-    QMenu *aboutMenu;
+    QMenu *helpMenu;
 
-    QToolBar *editToolBar;
+    //QToolBar *editToolBar;
     QToolButton *boundingBoxButton;
     QToolButton *addRandomRectButton;
 
     QAction *openAction;
+    QAction *exitAction;
     QAction *gridAction;
-    QAction *netlisAction;
+    QAction *netlistAction;
     QAction *thermalMapAction;
+    QAction *aboutAction;
 
     QSpinBox *gridSpinBox;
     QSpinBox *layerSpinBox;
+
+    QShortcut *shortcut;
 };
 
 #endif // MAINWINDOW_H

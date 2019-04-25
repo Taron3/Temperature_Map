@@ -30,7 +30,6 @@ SurfaceGraph::SurfaceGraph(QVector<qreal> &cellPowers, int row, int column, int 
 
     m_graph = new Q3DSurface();
     QWidget *container = QWidget::createWindowContainer(m_graph);
-    //! [0]
 
     if (!m_graph->hasContext())
     {

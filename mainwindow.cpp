@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QVector>
+#include <QMessageBox>
 
 #include <QDebug>
 
@@ -41,10 +42,9 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(widget);
 
         // scene->setBackgroundBrush(Qt::black);
-
+    setWindowTitle("Thermal Modeling");
     resize(700,500);
 }
-
 
 MainWindow::~MainWindow()
 {
@@ -148,7 +148,6 @@ void MainWindow::thermalMapActionTriggered()
     int row = (scene->itemsBoundingRect().height() / scene->getGridSize()) + 1;
     int column = (scene->itemsBoundingRect().width() / scene->getGridSize()) + 1;
     int layer = scene->getLayer();
-    int gridSize = scene->getGridSize();
 
     QVector<qreal> cellPowers = Parser::getCellPowers(ic, row, column, layer);
 //qDebug() << "\nCELLS=  " << cellPowers.size() << "\n" << cellPowers << "\n";
@@ -168,7 +167,7 @@ void MainWindow::setLayerTriggered(int layerSpinBoxValue)
 
 void MainWindow::createGroupBox()
 {
-    groupBox = new QGroupBox("GroupBox");
+    groupBox = new QGroupBox("Draw");
 
     Default   = createRadioButton("&Default");
     Line      = createRadioButton("&Line");
@@ -176,13 +175,11 @@ void MainWindow::createGroupBox()
     Polygon   = createRadioButton("&Polygon");
     Default->setChecked(true);
 
-
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->addWidget(Default);
     vbox->addWidget(Line);
     vbox->addWidget(Rectangle);
     vbox->addWidget(Polygon);
-
 
     vbox->addStretch(1);
     groupBox->setLayout(vbox);
@@ -232,37 +229,57 @@ QRadioButton *MainWindow::createRadioButton(const QString &text)
 void MainWindow::createActions()
 {
     openAction = new QAction("&Open");
+    openAction->setShortcuts(QKeySequence::Open);
+    openAction->setStatusTip(tr("Open the file with the preliminary distribution of the "
+                                "elements of integrated circuits"));
     openAction->setIcon(QIcon(":/images/open.png"));
     connect(openAction, SIGNAL(triggered()), this, SLOT(openActionTriggered()) );
 
+    exitAction = new QAction("E&xit");
+    exitAction->setShortcuts(QKeySequence::Quit);
+    exitAction->setStatusTip(tr("Exit the Thermal Modeling"));
+    connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
+
     gridAction = new QAction("&Grid");
+    gridAction->setShortcut(tr("Ctrl+G"));
+    gridAction->setStatusTip("Enable / Disable grid display");
     gridAction->setIcon(QIcon(":/images/grid.png"));
     gridAction->setCheckable(true);
     connect(gridAction, SIGNAL(toggled(bool) ), this, SLOT(gridActionTriggered(bool)) );
 
-    netlisAction = new QAction("&Netlist");
-    netlisAction->setIcon(QIcon(":/images/netlist.png"));
-    connect(netlisAction, SIGNAL(triggered()), this, SLOT(netlistActionTriggered()) );
+    netlistAction = new QAction("&Netlist");
+    netlistAction->setShortcut(tr("Ctrl+Alt+N"));
+    netlistAction->setStatusTip("Create netlist.sp file");
+    netlistAction->setIcon(QIcon(":/images/netlist.png"));
+    connect(netlistAction, SIGNAL(triggered()), this, SLOT(netlistActionTriggered()) );
 
     thermalMapAction = new QAction("&Thermal Map");
+    thermalMapAction->setShortcut(tr("Ctrl+T"));
+    thermalMapAction->setStatusTip("Show Thermal Model");
     thermalMapAction->setIcon(QIcon(":/images/surface"));
     connect(thermalMapAction, SIGNAL(triggered()), this, SLOT(thermalMapActionTriggered()) );
+
+    aboutAction = new QAction(tr("&About Thermal Modeling"), this);
+    aboutAction->setStatusTip(tr("Show info about Thermal Map"));
+    connect(aboutAction, SIGNAL(triggered()), this, SLOT(aboutActoinTriggered()));
 }
 
 void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu("&File");
     fileMenu->addAction(openAction);
+    fileMenu->addSeparator();
+    fileMenu->addAction(exitAction);
 
     editMenu = menuBar()->addMenu("&Edit");
     editMenu->addAction(gridAction);
 
     generateMenu = menuBar()->addMenu("&Generate");
-    generateMenu->addAction(netlisAction);
+    generateMenu->addAction(netlistAction);
     generateMenu->addAction(thermalMapAction);
 
-    aboutMenu = menuBar()->addMenu("&About");
-    menuBar()->show();
+    helpMenu = menuBar()->addMenu("&Help");
+    helpMenu->addAction(aboutAction);
 }
 
 void MainWindow::createToolBar()
@@ -287,7 +304,8 @@ void MainWindow::createToolBar()
     layerSpinBox->setRange(0, 10);
     connect(layerSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setLayerTriggered(int)) );
 
-    editToolBar = addToolBar("Edit Tool Buttons");
+    //QToolBar *fileToolBar = addToolBar(tr("File"));
+    QToolBar *editToolBar = addToolBar(tr("Edit Tool Buttons"));
 ///////////////////////////////////////////////////////////////////
     // editToolBar->addWidget(boundingBoxButton);           ///////
     // editToolBar->addWidget(addRandomRectButton);         ///////
@@ -295,12 +313,19 @@ void MainWindow::createToolBar()
 
     editToolBar->addWidget(layerSpinBox);
     editToolBar->addAction(openAction);
-    editToolBar->addAction(netlisAction);
+    editToolBar->addAction(netlistAction);
 
     editToolBar->addWidget(gridSpinBox);
     editToolBar->addAction(gridAction);
 
     editToolBar->addAction(thermalMapAction);
+}
+
+void MainWindow::aboutActoinTriggered()
+{
+    QMessageBox::about(this, tr("About Thermal Modeling"),
+             tr("The application demonstrates "
+                "<b>Thermal Modeling</b> of three-dimensional integrated circuits."));
 
 }
 

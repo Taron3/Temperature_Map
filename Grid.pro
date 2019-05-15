@@ -4,7 +4,6 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
 QT       += datavisualization
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -23,8 +22,6 @@ HEADERS  += mainwindow.h \
     scene.h \
     data.h \
     surfacegraph.h
-
-FORMS    += mainwindow.ui
 
 RESOURCES += \
     resources.qrc

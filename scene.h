@@ -68,7 +68,6 @@ private:
 
     bool isFirstPress;
 
-    //QVector<QPointF> points;
 };
 
 

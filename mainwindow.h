@@ -14,9 +14,9 @@
 #include "surfacegraph.h"
 
 
-namespace Ui {
-class MainWindow;
-}
+//namespace Ui {
+//class MainWindow;
+//}
 
 class MainWindow : public QMainWindow
 {
@@ -40,8 +40,6 @@ private slots:
     void aboutActoinTriggered();
 
 private:    
-    Ui::MainWindow *ui;
-
     void createGroupBox();
     QRadioButton *createRadioButton(const QString &text);
     void createActions();

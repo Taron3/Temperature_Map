@@ -13,7 +13,6 @@
 #include "QRandomGenerator"
 
 
-
 Scene::Scene(QObject *parent)
     : QGraphicsScene(parent)
     , m_gridSize(35)

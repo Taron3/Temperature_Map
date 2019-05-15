@@ -1,8 +1,8 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "surfacegraph.h"
 #include "data.h"
 
+#include <QtWidgets>
 #include <QMouseEvent>
 #include <QCheckBox>
 #include <QHBoxLayout>
@@ -12,14 +12,9 @@
 #include <QVector>
 #include <QMessageBox>
 
-#include <QDebug>
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-
     createActions();
     createMenus();
     createToolBar();

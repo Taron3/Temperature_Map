@@ -21,7 +21,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     scene.h \
-    random.h \
     data.h \
     surfacegraph.h
 

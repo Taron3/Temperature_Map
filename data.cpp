@@ -71,10 +71,10 @@ QVector<qreal> Parser::getCellPowers(QString &fileName, int row, int column, int
 
         line = line.simplified();
                 //  + _c_10_10_0_s = 87.8748m
-//qDebug() << "!!! DEBUG " << line << "\n";
+
         if(line.startsWith("+ _c_"))
         {
-//qDebug() << "!!! IFFF " << line << "\n";
+
             QStringList sl = line.split('=');
 
             QString cellName = sl[0];
@@ -86,7 +86,7 @@ QVector<qreal> Parser::getCellPowers(QString &fileName, int row, int column, int
             int j = cellName.section('_', 3, 3).toInt(); // get j
             int k = cellName.section('_', 4, 4).toInt(); // get layer
                 // if(layer == k)
-//qDebug() << "####= " << i << "  " <<  j << "  " << k << "\n";
+
             QString cellValue = sl[1];
             if(cellValue.endsWith('m'))
             {
@@ -106,5 +106,5 @@ QVector<qreal> Parser::getCellPowers(QString &fileName, int row, int column, int
             cellPowers[i * column + j] = value;
         }
     }
-return cellPowers;
+    return cellPowers;
 }

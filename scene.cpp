@@ -1,5 +1,7 @@
 
 #include "scene.h"
+#include "data.h"
+
 #include <QDebug>
 #include <QPoint>
 
@@ -8,9 +10,8 @@
 #include <QGraphicsPolygonItem>
 #include <QtMath>
 #include <QMessageBox>
+#include "QRandomGenerator"
 
-#include "random.h"
-#include "data.h"
 
 
 Scene::Scene(QObject *parent)
@@ -29,18 +30,6 @@ Scene::Scene(QObject *parent)
 void Scene::setDataFileName(QString fileName)
 {
     m_dataFileName = fileName;
-    /*
-    m_dataFile.setFileName(fileName);
-    if (!m_dataFile.open(QFile::ReadOnly | QFile::Text))
-    {
-        QMessageBox msgBox;
-        msgBox.setText("The file cannot opened.");
-        msgBox.exec();
-        return;
-    }
-
-     m_inStream.setDevice(&m_dataFile);
-     */
 }
 
 void Scene::setGridSize(int myGridSize)
@@ -68,12 +57,10 @@ void Scene::boundingBox()
 {
 
     QRectF boundingRect = itemsBoundingRect();
-    //qDebug() << "boundingBox  "<< boundingRect.left() << "  " << boundingRect.top();
-    //qDebug() << "boundingBoxBOOTOM  "<< boundingRect.bottomRight();
 
     QGraphicsRectItem *rect1 = new QGraphicsRectItem(boundingRect) ;
     //QGraphicsRectItem *rect1 = new QGraphicsRectItem(sceneRect()) ;
-    //qDebug() << sceneRect() << "\n";
+
     rect1->setPen(QPen(Qt::green, 1));
     addItem(rect1);
 }
@@ -82,10 +69,12 @@ void Scene::addRandomRect()
 {
     for(int i = 0; i < 1000; i++)
     {
-        //qDebug() << "POWER= " << Random::get(0.05, 0.7) << "\n";
         QList<QGraphicsItem*> itemList = items();
+        QRectF randomRect( QRandomGenerator::global()->bounded(0, 400),
+                           QRandomGenerator::global()->bounded(0, 170),
+                           QRandomGenerator::global()->bounded(10, 300),
+                           QRandomGenerator::global()->bounded(10, 300) );
 
-        QRectF randomRect( Random::get(0, 400), Random::get(0, 170), Random::get(10, 300), Random::get(10, 300) );
         rect = new QGraphicsRectItem(randomRect );
         rect->setPen(QPen(Qt::red, 2));
         bool isIntersected = false;
@@ -100,10 +89,8 @@ void Scene::addRandomRect()
         if(!isIntersected)
         {           
             addItem(rect);
-            //qDebug() << "==== " << rect->rect() << " ====\n";
         }
     }
-    qDebug() << "******************************************************\n";
 }
 
 void Scene::addElementsFromFile()
@@ -162,10 +149,6 @@ QString Scene::writeNetlist()
     int row = (itemsBoundingRect().height() / m_gridSize) + 1;
     int column = (itemsBoundingRect().width() / m_gridSize) + 1;
 
-
-qDebug() << "POWER LISTS IZE= " << powerList.size() << "\n";
-qDebug() << "ROW  = " << row << "\n";
-qDebug() << "COLUN= " << column << "\n";
     for(int i = 0; i < row ; ++i)
     {
         for(int j = 0; j < column; ++j)
@@ -180,7 +163,7 @@ qDebug() << "COLUN= " << column << "\n";
             // .param i_i_j_layer =
             netlist += ".param i_" + istr + "_" + jstr + "_" + kstr
                     +  " = " + QVariant(powerList[column * i + j]).toString() + "\n";
-// qDebug() << i << "  " << j << "  " << m_layer << "\n";
+
             // ii_j_layer vdd _c_i_j_layer dc = i_0_1_0 ac = 0
             netlist += "i"         + istr + "_" + jstr + "_" + kstr
                     +  " vdd _c_"  + istr + "_" + jstr + "_" + kstr
@@ -238,8 +221,6 @@ qDebug() << "COLUN= " << column << "\n";
     netlist += ".tran 10p 5n\n\n";
     netlist += ".end";
 
-      //qDebug() << "DEBUG_START CellSIZE= " << powerList.size() << "\n";
-      //qDebug() << "******************\n" << netlist;
     return netlist;
 }
 /*
@@ -247,9 +228,7 @@ void Scene::drawGrid(const QRectF &rect)
 {
     qreal left = rect.left();
     qreal top  = rect.top();
-    qDebug() << "drawGrid RECT  " << rect << "\n";
-    qDebug() << "\nLEFT " << left << "top " << top << "\n" ;
-    qDebug() << "\nwww " << rect.width() << "hhh " << rect.height() << "\n" ;
+
     for (qreal x = left; x <= rect.width() ; x += m_gridSize)  // | | |
     {
         addLine(x, top, x, top + rect.height(), QPen(Qt::black));
@@ -262,16 +241,36 @@ void Scene::drawGrid(const QRectF &rect)
 */
 void Scene::drawBackground(QPainter *painter, const QRectF &rect)
 {
-    // setBackgroundBrush(Qt::black);  // don't work with QFileDialog::getOpenFileName( ... )
-    painter->fillRect(rect, QColor(63, 60, 57 )); // more darkGray
+    // setBackgroundBrush(Qt::black);  // don't work with QFileDialog::getOpenFileName( ... ) in Ubuntu
+        painter->fillRect(rect, QColor(63, 60, 57 )); // more darkGray
 
+/*
+    // draw grid points
+    painter->fillRect(rect, Qt::black);
+
+    QPen pen(Qt::white, 1);
+        painter->setPen(pen);
+
+        qreal left = int(rect.left()) - (int(rect.left()) % m_gridSize);
+        qreal top = int(rect.top()) - (int(rect.top()) % m_gridSize);
+        QVector<QPointF> points;
+        for (qreal x = left; x < rect.right(); x += m_gridSize)
+        {
+            for (qreal y = top; y < rect.bottom(); y += m_gridSize)
+            {
+                points.append(QPointF(x,y));
+            }
+        }
+        painter->drawPoints(points.data(), points.size());
+*/
+    // draw grid
     if(m_isDraw)
     {
         int step = m_gridSize;
         painter->setPen(QPen(QColor(Qt::white)));
 
         // horizontal
-        qreal start = int(rect.top()) - (int(rect.top()) % step);// round(rect.top(), step);
+        qreal start = int(rect.top()) - (int(rect.top()) % step);
         if (start > rect.top())
         {
             start -= step;
@@ -283,7 +282,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &rect)
         }
 
         // vertical
-        start = int(rect.left()) - (int(rect.left()) % step);//round(rect.left(), step);
+        start = int(rect.left()) - (int(rect.left()) % step);
         if (start > rect.left())
         {
             start -= step;
@@ -298,40 +297,30 @@ void Scene::drawBackground(QPainter *painter, const QRectF &rect)
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    //if (mouseEvent->button() != Qt::LeftButton)
-      //  return;
+    if (mouseEvent->button() != Qt::LeftButton)
+        return;
 
     switch (myMode)
     {
         case Default:
         {
-        qDebug() << "MOUSE  " << mouseEvent->scenePos() << "  MOUSE\n";
-            // double  rad = 4;
-        //
-        //    QPointF point = mouseEvent->scenePos();
-        //    changeReceivedPoint(point);
-        //    addEllipse( point.x() /* - rad */, point.y() /* - rad */, /* rad  * */ 5.0, /* rad * */ 5.0,
-        //    QPen(Qt::white), QBrush(Qt::NoBrush) );
+            double  rad = 4;
+
+            QPointF point = mouseEvent->scenePos();
+            changeReceivedPoint(point);
+            addEllipse( point.x()  - rad , point.y()  - rad ,  rad  *  5.0,  rad * 5.0,
+            QPen(Qt::white), QBrush(Qt::NoBrush) );
             break;
 
         }
         case Line:
         {
-////////////////////////////////////////////////////////////////
-        QList<QGraphicsItem*> itemList = items(Qt::AscendingOrder);
-        foreach(QGraphicsItem *item, itemList)
-        {
-            QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*> (item);
-            qDebug() << "RECT = " << rectItem->rect() << "\n";
-        }
-/////////////////////////////////////////////////////////////////
-
-            /*QPointF startPoint = mouseEvent->scenePos();
+            QPointF startPoint = mouseEvent->scenePos();
             changeReceivedPoint(startPoint);
 
             line = new QGraphicsLineItem(QLineF(startPoint, startPoint)) ;
             line->setPen(QPen(Qt::white, 1));
-            addItem(line);*/
+            addItem(line);
             break;
         }
         case Rectangle:
@@ -346,13 +335,12 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         }
         case Polygon:
         {
-            static QPointF startPoint1;
+            QPointF startPoint1;
 
             if( mouseEvent->button() == Qt::LeftButton)
             {
                 if(isFirstPress)
                 {
-                    qDebug() << Q_FUNC_INFO << "Press111" ;
                     startPoint1 = mouseEvent->scenePos();
                     changeReceivedPoint(startPoint1);
 
@@ -363,7 +351,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
                 }
                 else
                 {
-                    qDebug() << Q_FUNC_INFO << "Press222"  ;
                     QPointF startPoint = lineForPolygon->line().p2();
 
                     lineForPolygon = new QGraphicsLineItem(QLineF(startPoint, startPoint)) ;
@@ -373,7 +360,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
             }
             else if( mouseEvent->button() == Qt::RightButton)
             {
-                qDebug() << Q_FUNC_INFO << "PressRIGHT"  ;
                 QPointF startPoint = lineForPolygon->line().p2();
 
                 lineForPolygon = new QGraphicsLineItem(QLineF(startPoint, startPoint1)) ;
@@ -405,18 +391,11 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
         QPointF endPoint = mouseEvent->scenePos();
         changeReceivedPoint(endPoint);
 
-        /*                       if(rect->rect().topLeft().x() > endPoint.x()
-                                        && rect->rect().topLeft().y() > endPoint.y())
-
-                                    std::swap(static_cast<int> (rect->rect().topLeft().x() ), static_cast<int> (endPoint.x() ));
-                                    std::swap(static_cast<int> (rect->rect().topLeft().y() ), static_cast<int> (endPoint.y() ));
-        */
         QRectF newRect(rect->rect().topLeft(), endPoint);
         rect->setRect(newRect);
     }
     else if(myMode == Polygon && lineForPolygon != nullptr)
     {
-         qDebug() << Q_FUNC_INFO << "Move" ;
          QPointF endPoint = mouseEvent->scenePos();
          changeReceivedPoint(endPoint);
 
@@ -448,7 +427,6 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     {
         if( mouseEvent->button() == Qt::LeftButton)
         {
-            qDebug() << Q_FUNC_INFO << "Release";
             QPointF endPoint = mouseEvent->scenePos();
             changeReceivedPoint(endPoint);
 
@@ -504,7 +482,6 @@ QList<QRectF> Scene::getCells()
             cellList.append(QRectF(x, y, m_gridSize, m_gridSize) );
         }
     }
-    // qDebug() << "CellList= " << cellList.size() << "\n";
     return cellList;
 }
 
@@ -522,10 +499,8 @@ qreal Scene::power(QRectF intersectedRect, QRectF rect, int i)
 
     qreal rectPower = 0;
     int rectNumber = 0;
-//qDebug() << "IN_power()" << inStream.readLine() << "\n";
     while (!inStream.atEnd())
     {
-        //qDebug() << "WHILE_IN_power()" << "\n";
         QString line = dataFile.readLine();
 
         line = line.simplified();
@@ -533,7 +508,6 @@ qreal Scene::power(QRectF intersectedRect, QRectF rect, int i)
 
         if(rectNumber == i)
         {
-            //qDebug() << "IF_IN_power()" << "\n";
             rectPower = Parser::getPower(parameterList);
             // break;
         }
@@ -550,7 +524,6 @@ QList<qreal> Scene::getPowers()
 {
     // get Cells
     QList<QRectF> cellList = getCells();
-qDebug() << "CELL LIST SIZE= " << cellList.size() << "\n";
 
     // powers for each cell
     QList<qreal> cellPowerList;
@@ -570,7 +543,6 @@ qDebug() << "CELL LIST SIZE= " << cellList.size() << "\n";
         }
         cellPowerList.append(cellPower);
     }
-   // qDebug() << "CelPowerList= " << cellPowerList.size() << "\n";
 
     return cellPowerList;
 }

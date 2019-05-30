@@ -165,7 +165,6 @@ void SurfaceGraph::fillThermalProxy()
             if(power > maxPower)
             {
                 maxPower = power;
-                //qDebug() << "POWER " << power << "\n";
             }
             (*newRow) << QVector3D(j, power, i);
         }
@@ -194,7 +193,6 @@ void SurfaceGraph::thermalModel(double max)
         m_graph->axisZ()->setLabelAutoRotation(30);
 
         m_graph->addSeries(m_thermalSeries);
-
               // m_graph->activeTheme()->setType(Q3DTheme::Theme(7));
 }
 

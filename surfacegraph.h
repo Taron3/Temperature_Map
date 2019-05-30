@@ -19,15 +19,12 @@ public:
 
     void thermalModel(double max);
 
-    //! [0]
     void toggleModeNone() { m_graph->setSelectionMode(QAbstract3DGraph::SelectionNone); }
     void toggleModeItem() { m_graph->setSelectionMode(QAbstract3DGraph::SelectionItem); }
     void toggleModeSliceRow() { m_graph->setSelectionMode(QAbstract3DGraph::SelectionItemAndRow
                                                           | QAbstract3DGraph::SelectionSlice); }
     void toggleModeSliceColumn() { m_graph->setSelectionMode(QAbstract3DGraph::SelectionItemAndColumn
                                                              | QAbstract3DGraph::SelectionSlice); }
-    //! [0]
-
     void setBlackToYellowGradient();
     void setGreenToRedGradient();
 

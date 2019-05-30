@@ -6,7 +6,6 @@
 #include <QGraphicsScene>
 #include <QPainter>
 #include <QApplication>
-
 #include <QGraphicsSceneMouseEvent>
 #include <QMouseEvent>
 #include <QPointF>

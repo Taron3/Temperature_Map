@@ -13,11 +13,6 @@
 #include "scene.h"
 #include "surfacegraph.h"
 
-
-//namespace Ui {
-//class MainWindow;
-//}
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
